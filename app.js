@@ -7,11 +7,9 @@ const Blog = require("./models/blog");
 const app = express();
 
 // connect to MongoDB
-// username: group5
-// password: #6b.#y3MzApsPvU
 mongoose.set("strictQuery", false);
 const dbURI =
-  "mongodb+srv://group5:group5password@cluster0.9j8r4ed.mongodb.net/Group_5_Final_Project_DB?retryWrites=true&w=majority";
+  "mongodb+srv://tutorial:tut1234@cluster0.9j8r4ed.mongodb.net/Class_Tutorial?retryWrites=true&w=majority";
 mongoose
   .connect(dbURI /* , { useNewUrlParser: true, useUnifiedTopology: true } */)
   .then((result) => {
@@ -67,15 +65,26 @@ app.post("/blogs", (req, res) => {
     });
 });
 
+app.get("/blogs/create", (req, res) => {
+  res.render("create", { title: "Create" });
+});
+
 // handle individual blog entries
 app.get("/blogs/:id", (req, res) => {
   const id = req.params.id;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).render("404", { title: "404" });
+  }
   Blog.findById(id)
     .then((result) => {
+      if (!result) {
+        return res.status(404).render("404", { title: "404" });
+      }
       res.render("details", { blog: result, title: "Blog Details" });
     })
     .catch((error) => {
       console.log(error);
+      res.status(500).send("Internal server error");
     });
 });
 
@@ -88,10 +97,6 @@ app.delete("/blogs/:id", (req, res) => {
     .catch((error) => {
       console.log(error);
     });
-});
-
-app.get("/blogs/create", (req, res) => {
-  res.render("create", { title: "Create" });
 });
 
 // 404 page
